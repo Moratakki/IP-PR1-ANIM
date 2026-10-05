@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documnent</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 48px 20px 40px;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #3b2a1c;
+      background: linear-gradient(180deg, #cfe9ff 0%, #ffe7c9 55%, #ffd6a5 100%);
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 620px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 4vw, 42px);
+      letter-spacing: .01em;
+      color: #7a4114;
+    }
+
+    .page-header p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #8a6b4f;
+    }
+
+    .page-footer {
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+      color: #9b7c60;
+    }
+
+    /* ================= Холст ================= */
+    .canvas {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      width: 100%;
+      max-width: 720px;
+      height: 620px;
+      padding-bottom: 30px;
+    }
+
+    /* тень под деревом */
+    .canvas::after {
+      content: "";
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 250px;
+      height: 26px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center,
+                  rgba(120, 75, 30, .38), rgba(120, 75, 30, 0) 70%);
+      z-index: -1;
+    }
+
+    .scene { transform-origin: bottom center; }
+
+    /* лёгкое покачивание всего дерева на ветру */
+    .tree {
+      transform-origin: bottom center;
+      animation: tree-sway 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes tree-sway {
+      from { transform: rotate(-1.2deg); }
+      to   { transform: rotate(1.2deg); }
+    }
+
+    /* ================= Ствол и ветки ================= */
+    .trunk {
+      position: relative;
+      width: 10px;
+      height: 500px;
+      margin: 0 auto;
+    }
+
+    .trunk,
+    .branch {
+      border-radius: 25px;
+      background: linear-gradient(to right, #8a5a2b, #4a2a12);
+    }
+
+    .branch {
+      position: absolute;
+      width: 5px;
+      left: calc(50% - 2.5px);   /* ветка растёт ровно из центра ствола */
+      transform-origin: bottom center;
+    }
+
+    /* ветки влево / вправо */
+    .branch:nth-child(even) { transform: rotate(60deg); }
+    .branch:nth-child(odd)  { transform: rotate(-60deg); }
+
+    /* место прикрепления и длина каждой ветки */
+    .branch:nth-child(1) { top: 180px; height: 180px; }
+    .branch:nth-child(2) { top: 160px; height: 150px; }
+    .branch:nth-child(3) { top: 120px; height: 150px; }
+    .branch:nth-child(4) { top: 110px; height: 130px; }
+    .branch:nth-child(5) { top:  85px; height: 120px; }
+    .branch:nth-child(6) { top:  70px; height: 105px; }
+    .branch:nth-child(7) { top:  45px; height:  95px; }
+    .branch:nth-child(8) { top:  35px; height:  80px; }
+
+    /* ================= Листья ================= */
+    .leaf {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      border-radius: 75% 0 75% 0;
+      background: linear-gradient(to right, #ffd166, #e8590c);
+    }
+
+    .leaf:nth-child(odd) {
+      left: 100%;
+      transform-origin: 0% 100%;
+      animation-name: leaf-odd-grow;
+      animation-duration: 3s;
+      animation-fill-mode: both;
+    }
+
+    .leaf:nth-child(even) {
+      left: -150%;
+      transform-origin: 50% 100%;
+      animation-name: leaf-even-grow;
+      animation-duration: 3s;
+      animation-fill-mode: both;
+    }
+
+    /* ряды листьев появляются по очереди */
+    .leaf:nth-child(1) { top:  5px; animation-delay: 2.5s; }
+    .leaf:nth-child(2) { top: 20px; animation-delay: 2s;   }
+    .leaf:nth-child(3) { top: 50px; animation-delay: 1.5s; }
+
+    @keyframes leaf-odd-grow {
+      0%   { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes leaf-even-grow {
+      0%   { transform: rotate(-90deg) scale(0); }
+      100% { transform: rotate(-90deg) scale(1); }
+    }
+
+    /* ================= Плоды ================= */
+    .fruit {
+      position: absolute;
+      top: 34px;
+      left: calc(50% - 6px);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 30%, #ff8a80, #c62828 72%);
+      box-shadow: 0 0 6px rgba(198, 40, 40, .45);
+      transform-origin: 50% 0;
+      animation: fruit-grow 1.2s ease-out both;
+      animation-delay: 3.5s;
+    }
+
+    @keyframes fruit-grow {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    /* ================= Адаптив ================= */
+    @media (max-width: 620px) {
+      .canvas { height: 470px; padding-bottom: 20px; }
+      .scene  { transform: scale(.72); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tree { animation: none; }
+      .leaf,
+      .fruit { animation-duration: .01s; animation-delay: 0s; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Осеннее дерево</h1>
+    <p>
+      Анимация роста листьев и плодов, собранная только средствами CSS
+    </p>
+  </header>
+
+  <main class="canvas">
+    <div class="scene">
+      <div class="tree">
+        <div class="trunk">
+
+          <!-- ветка 1 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+          </div>
+
+          <!-- ветка 2 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="fruit"></div>
+          </div>
+
+          <!-- ветка 3 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+          </div>
+
+          <!-- ветка 4 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="fruit"></div>
+          </div>
+
+          <!-- ветка 5 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+          </div>
+
+          <!-- ветка 6 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="fruit"></div>
+          </div>
+
+          <!-- ветка 7 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+          </div>
+
+          <!-- ветка 8 -->
+          <div class="branch">
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="leaf"></div>
+            <div class="fruit"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    <p>Листья растут рядами с задержкой, плоды появляются последними.</p>
+  </footer>
+
+</body>
+</html>
